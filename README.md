@@ -8,7 +8,9 @@ cd django_template_practice1
 
 # Create apps
 django-admin startapp user_app
+
 django-admin startapp catalog_app
+
 django-admin startapp upload_app
 
 pip install -r requirements.txt
