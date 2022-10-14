@@ -1,14 +1,15 @@
-# basic_django
-# Init basic django
+# django_template_practice1
+# Init a simple Django template app
 # Create project
-django-admin startproject basic_django
+django-admin startproject django_template_practice1
 
 # path to project folder
-cd basic_django
+cd django_template_practice1
 
 # Create apps
 django-admin startapp user_app
-django-admin startapp employee_app
+django-admin startapp catalog_app
+django-admin startapp upload_app
 
 pip install -r requirements.txt
 
