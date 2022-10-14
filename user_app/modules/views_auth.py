@@ -32,25 +32,6 @@ from django.conf import settings
 from django.core import mail, serializers
 from django.core.mail import BadHeaderError
 from django.urls import reverse, reverse_lazy
-# from django.utils.translation import ugettext_lazy as _
-# from django.views.generic import FormView, RedirectView
-# Local Django imports
-# from urllib.parse import urlparse
-# from django.core.mail import send_mail
-# from django.core.mail.message import BadHeaderError
-# from django_api.settings import MEDIA_ROOT
-# from pip._internal import req
-# from .list import ListBreadcrumbMixin
-# from view_breadcrumbs import (
-#     BaseBreadcrumbMixin,
-#     # CreateBreadcrumbMixin,
-#     DetailBreadcrumbMixin,
-#     ListBreadcrumbMixin,
-#     # UpdateBreadcrumbMixin,
-# )
-# from headcrumbs.decorators import crumb
-# from headcrumbs.util import name_from_pk
-# from .models import *
 from ..models.account_model import Author
 from .form_auth import *
 from .form_auth import (
@@ -68,8 +49,8 @@ def index(request):
     # return HttpResponse('Hello, welcome to the index page.')
     #     user_profile = request.session.get('user_profile') #print("________: "+json.dumps(user_profile)+user_profile['first_name'] )
     print('Run debug ok')
-    if request.user.is_authenticated:  # print("_______: "+json.dumps(user_profile)+user_profile['first_name'] )
-        return redirect('user:home')  # HttpResponseRedirect("/home/")
+    if request.user.is_authenticated:
+        return redirect('user:home')
 
     return render(request, "index.html",
                   {
@@ -87,10 +68,6 @@ def index(request):
 def homepage(request):
     """Renders the home page."""
     try:
-        #         user_profile = request.session.get('user_profile')
-        # #         print("_____________________________: "+json.dumps(user_profile)+user_profile['first_name'] )
-        #         if user_profile and request.session.test_cookie_worked():
-        # request.session.set_test_cookie()
         context = {
             'title': "Home page",
             'next': '/home/',
@@ -108,25 +85,13 @@ def homepage(request):
 # class Homepage(LoginRequiredMixin, BaseBreadcrumbMixin, TemplateView):
 class Homepage(LoginRequiredMixin, TemplateView):  # LoginRequiredMixin check Ä‘Äƒng nháº­p
     template_name = 'home.html'
-    #     media_root = settings.MEDIA_ROOT
-    #     _profile = Profile.objects.all()
-    #     context_object_name = 'prof'
-    #     _profile = form_auth.ProfileForm(instance=Profile)
-
     extra_context = {
         'title': "Home page",
         # 'next':'/home/',
         'list': 'list/',
-        #         'profile_form': _profile,
-        #         'image_profile': os.listdir(media_root + '/images'), #'image_profile': os.listdir(media_root + '/images/'),
         'year': datetime.now().year
     }
-    #     extra_context['form'] = form_auth.UserForm
-    #     extra_context['profile_form'] = form_auth.ProfileForm
-    #     form_class = extra_context
-    #     crumbs = []
     crumbs = []
-
 
 # class TestHomeView(BaseBreadcrumbMixin, TemplateView):
 class TestHomeView(TemplateView):
@@ -134,7 +99,7 @@ class TestHomeView(TemplateView):
     crumbs = []
 
 
-# ======================== Login ===============================
+# ======= Login =============
 def loginAdminView(request):
     return redirect("/admin/")
 
@@ -386,15 +351,6 @@ def user_logout(request):
         """Logout may be done via POST."""
         return self.get(request, *args, **kwargs)
 
-
-#     try:
-#         del request.session['user_profile'] #xoa session
-#         if request.session.test_cookie_worked():
-#             request.session.delete_test_cookie()
-#     except KeyError:
-#         return HttpResponseRedirect("/")
-#     return render(request, 'registration/logged_out.html')
-
 # ======================== sign_up ===============================
 class RegistrationAuthorForm(UserCreationForm):
     class Meta:
@@ -407,25 +363,7 @@ class RegistrationAuthorView(FormView):  # via template
     # form_class = UserCreationForm
     form_class = RegistrationAuthorForm
 
-
-
-# class AuthorCreate(CreateView):
-#     model = Author
-#     fields = ['name']
-#     template_name_suffix = '_create_form'
-
-
-# class AuthorUpdate(UpdateView):
-#     model = Author
-#     fields = ['name']
-#     template_name_suffix = '_update_form'
-
-
-# class AuthorDelete(DeleteView):
-#     model = Author
-#     success_url = reverse_lazy('author-list')
-
-
+    
 # CreateView
 # class RegistrationUser(DetailBreadcrumbMixin, FormView):  # via template
 class RegistrationUser(FormView):  # via template
@@ -487,29 +425,6 @@ class RegistrationUser(FormView):  # via template
     #     }
     #     extra_context['username'] = self.request.GET.get('username')
     #     return extra_context
-
-#     def post(self, request, *args, **kwargs):
-#         data = request.POST
-# #         name = data.get('first_name', '')
-# #         subject = "subject: Title header"
-# #         info_message = "body ms" #data.get('message', '')
-#         from_email = settings.EMAIL_HOST_USER
-#         to_email = data.get('email', '')
-#         file_subject='password_reset_subject.txt'
-#         file_message='password_reset_email.html',
-#         openSubject = open(MEDIA_ROOT + os.path.sep + file_subject, 'r')
-#         subject = openSubject.read()
-#         openSubject.close()
-#
-# #         ctx = {
-# #             'email': to_email,
-# #         }
-# #         message = get_template(MEDIA_ROOT + os.path.sep+'password_reset_email.html').render(Context(ctx)) #my_app/.../file
-# #         html_message = render_to_string(MEDIA_ROOT + os.path.sep + file_message, context_instance={'context': 'values'})
-# #         message = strip_tags(html_message)
-#         message='http://test.ts24.com.vn:8000/accounts/reset/MQ/5i9-90e69e04d17ed642b736/'
-#         mail.send_mail(subject, message, from_email, [to_email], fail_silently=False, )
-#         return HttpResponseRedirect('/accounts/login/')
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -595,36 +510,6 @@ class RegistrationUserProfile(FormView):
                       extra_context)  # {'user_form': user_form,'profile_form': profile_form}
 
 
-# --------------------------------------------------------------------------------------------------------------------
-#             user = user_form.save(commit=False)
-#             user_profile = profile_form.save(commit=False)
-#
-#             # form.cleaned_data is a dictionary which contains data validated
-#             # by fields constraints (Say we have a field which is a number. The cleaning here would
-#             # be to just convert a string which came from the browser to an integer.)
-# #             username = request.POST.get('username')  # username = user_form.cleaned_data['username']
-#             password = request.POST.get('password1') # password = user_form.cleaned_data['password1']
-# #             phoneNumber = request.POST.get('phoneNumber')
-# #             birthdate = request.POST.get('birthdate')
-#             # This will be clarified later
-#             # You can save each object individually if they're not connected, as mines are (see class UserProfile below)
-#             user.set_password(password)
-# #             user_profile.set_phoneNumber(phoneNumber)
-# #             user_profile.set_birthdate(birthdate)
-#             user.profile = user_profile
-#             user.save()
-
-#             user_save = user_form.save()
-#             profile_save = profile_form.save(False)
-#             profile_save.user = user_save
-#             profile_save.save()
-
-#             user = auth.authenticate(username=username, password=password)
-#             if user is not None:
-#                 if user.is_active:
-#                     auth_login(request,user)
-#                 return redirect('login')#render(request,'auth/login.html')#return redirect('user:private_profile')
-
 # ======================== FORM reset pass ===============================
 class PassResetView(FormView):  #
     #     template_name = 'auth/sign_up_auth.html'
@@ -690,21 +575,6 @@ class PasswordResetView(FormView):
         #         mail.send_mail(subject, plain_message, from_email, [to_email], html_message=html_message, )
         #         html_message.attach('auth/Attachment.pdf', file_to_be_sent, 'file/pdf')
         return redirect('password_reset_done')
-
-
-#     message1 = ('Thatâ€™s your subject #1',
-#      'Thatâ€™s your message body #1',
-#      'from@yourdjangoapp.com',
-#      ['to@yourbestuser1.com', 'to@yourbestuser2.com'])
-#     message2 = ('Thatâ€™s your subject #2',
-#      'Thatâ€™s your message body #2',
-#      'from@yourdjangoapp.com',
-#      ['to@yourbestuser2.com'])
-#     message3 = ('Thatâ€™s your subject #3',
-#      'Thatâ€™s your message body #3',
-#      'from@yourdjangoapp.com',
-#      ['to@yourbestuser3.com'])
-#     send_mass_mail((message1, message2, message3), fail_silently=False)
 
 
 def resetPassword(req):
@@ -786,39 +656,11 @@ def blog(request):
         'crumbs': crumbs,
         'year': datetime.now().year,
     }
-    # print(get_current_site(request))    #test.ts24.com.vn:8000
-    # print(request.path)                 #/home/
-    # print(request.get_full_path)        #/home/?q=test
-    # print(request.build_absolute_uri)   #http://127.0.0.1:8000/home/?q=test
     # dissect the url
     whole_url = request.path  # context['title'] #request.path | request.get_full_path | request.build_absolute_uri
     #     context['breadcrumbs'] = breadcrumbs(whole_url)
     #     return HttpResponse(template.render(context, request))
     return render(request, 'blog/blog.html', context)
-
-
-#     return render(request, 'blog/blog.html', {})
-#     html = "<html><body>It is now %s.</body></html>"
-#     return HttpResponse(html)
-
-
-# def blog_detail(request, blog_id):
-#     crumbs = [('Trang chủ', reverse_lazy('user:home')), ('Show danh sách', reverse_lazy('user:blog')),
-#               ('Show chi tiáº¿t', reverse_lazy('user:blog_detail'))]
-#     context = {
-#         'title': 'Show chi tiết',
-#         'crumbs': crumbs,
-#         'year': datetime.now().year,
-#     }
-#     try:
-#         context['object_detail'] = '' # Book.objects.get(pk=blog_id)
-#     except Book.DoesNotExist # Book.DoesNotExist:
-#         raise Http404("Book does not exist")
-#     # dissect the url
-#     # whole_url = 'blog/'+str(blog_id)+'/'
-#     whole_url = request.path  # context['title'] #request.path | request.get_full_path | request.build_absolute_uri
-#     # context['breadcrumbs'] = breadcrumbs(whole_url)
-#     return render(request, 'blog/blog_detail.html', context)
 
 
 class HomePageView(TemplateView):
@@ -915,25 +757,6 @@ class ProfileView(TemplateView):
     model = Author
     # from pprint import pprint; pprint('author')
     context_object_name = 'author'
-    # # LOCAL_ACCOUNT = 0
-    # # GOOGLE = 1
-    # # FACEBOOK = 2
-    # # LINKEDIN = 3
-    # # SOCIAL_CHOICES = (
-    # #     (LOCAL_ACCOUNT, 'Local account'),
-    # #     (GOOGLE, 'Google'),
-    # #     (FACEBOOK, 'Facebook'),
-    # #     (LINKEDIN, 'Linkedin'),
-    # # )
-    # # #     profile = User.objects.get(username="hoanghh").profile#User.objects.get()
-    # # #     model = Profile
-    # role_value = forms.ModelChoiceField(queryset=Author.objects.all())
-    # #     for key,value in SOCIAL_CHOICES:
-    # # #         print(str(key) +", "+str(value))
-    # # #         print(profile.role)
-    # #         if key == profile.role:
-    # #            role_value = value
-    # #            break
     # extra_context['author'] = Author.objects.all() # self.request.GET.get('username')
     template_name = 'profile/profile_view.html'
 
@@ -963,18 +786,7 @@ class ProfileView(TemplateView):
     # }
     # crumbs = [('Thông tin cá nhân', reverse_lazy('user:profile'))]
 
-#     def get_object(self, *args, **kwargs):
-#         return self.request.user.profile
-#     def get_queryset(self):
-#         return Author.objects.get()#.filter(borrower=self.request.user)
-#     def get_context_data(self, **kwargs):
-#         user = User.objects.get(id=kwargs['id'])
-#         from pprint import pprint; pprint(user)
-#         # self.profile_form = user
-#         return user
-# do something with this user
-
-
+    
 # class EditUserProfileView_Test(LoginRequiredMixin, ListBreadcrumbMixin, UpdateView):  # Note that we are using UpdateView and not FormView
 class EditUserProfileView_Test(UpdateView):  # Note that we are using UpdateView and not FormView
     # https://django.cowhite.com/blog/adding-and-editing-model-objects-using-django-class-based-views-and-forms/
