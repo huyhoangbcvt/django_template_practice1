@@ -33,7 +33,7 @@
         <h6>Tên sản phẩm: {{item.p_name}}</h6>
         <h5>Mã sản phẩm: {{item.p_code}}</h5>
         <h6>Xuất xứ: {{item.p_country}}</h6>
-        <h6>Người tạo: {{item.author}}</h6>
+        <h6>Người tạo: {{item.user.last_name}} {{item.user.first_name}}</h6>
         <p><img src="{{item.p_image.url}}" alt="Smiley face" width="700" height="350"></p>
         <h6>Mô tả: {{item.p_description}}</h6>
         <hr/>

@@ -13,26 +13,38 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView
 from django.core.files.base import ContentFile
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from ..models.product_model import Product
 
-def list(request):
+
+# auth cho func, using LoginRequiredMixin cho class
+@login_required()
+def list_category(request):
     # pm = Category.objects.all()
-    # sort
-    # pm = Category.objects.order_by(F('created_at').desc(nulls_last=True)) #.asc()
+    # sort pm = Category.objects.order_by(F('created_at').desc(nulls_last=True)) #.asc()
     # filter
-    pm = Category.objects.filter().order_by(F('created_at').desc(nulls_last=True))
+    user = request.user
+    # print(user.username)
+    pm = Category.objects.filter(user_id=user.id).order_by(F('created_at').desc(nulls_last=True))
     # queryset
-
     paginator = Paginator(pm, 2)  # Show 25 contacts per page.
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'blog/view_category.html', {'page_obj':page_obj})
 
-class UploadImage(TemplateView):
+
+class UploadImage(TemplateView, LoginRequiredMixin):
     form = CatalogForm
     template_name = 'blog/upload_category.html'
 
     def post(self, request, *args, **kwargs):
-        form = CatalogForm(request.POST, request.FILES)
+        user = request.user
+        # print(user.username)
+        pm = Product.objects.filter(user_id=user.id).order_by(F('created_at').desc(nulls_last=True))
+        # from pprint import pprint;pprint(pm)
+        form = CatalogForm(request.POST, request.FILES, user=user, product=pm) #, user=request.user, product=pm
         if form.is_valid():
             obj = form.save()
             return HttpResponseRedirect(reverse_lazy('catalog:view_upload_template_page', kwargs={'pk': obj.id}))
@@ -43,8 +55,9 @@ class UploadImage(TemplateView):
     def get(self, request, *args, **kwargs):
         return self.post(request, *args, **kwargs)
 
+
 # Upload template
-class UploadImageDisplay(DetailView):
+class UploadImageDisplay(DetailView, LoginRequiredMixin):
     model = Category
     template_name = 'blog/upload_category_display.html'
     context_object_name = 'UF'

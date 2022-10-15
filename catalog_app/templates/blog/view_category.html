@@ -30,6 +30,7 @@
     <a href="{% url 'catalog:catalog' %}">Go Back</a>
     {% for item in page_obj %}
         <h2>Tiêu đề: {{item.title}}</h2>
+        <h6>Người tạo: {{item.user.last_name}} {{item.user.first_name}}</h6>
         <p><img src="{{item.image.url}}" alt="Smiley face" width="250" height="250"></p>
         <p>Nội dung: {{item.content}}</p>
         <hr/>

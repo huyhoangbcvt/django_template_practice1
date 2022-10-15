@@ -8,7 +8,7 @@
 {% block nav_sidebar %}{% include 'layout/nav-sidebar.html' %}{% endblock %}
 
 {% block content %}
-    <a href="{% url 'upload:upload_template' %}">Go Back</a>
+    <a href="{% url 'catalog:view-category' %}">Go Back</a>
     <hr/>
     <h1>{{UF.title}}</h1>
     <img src="{{UF.image.url}}" alt="Smiley face" width="250" height="250">

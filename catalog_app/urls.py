@@ -18,19 +18,21 @@ from .modules import views_catalog
 # from django.views.generic import RedirectView
 app_name = 'catalog'
 
+
 urlpatterns = [
+    # Rest Framework
     path("all-catalog", ListAllProfile.as_view(), name="all-catalog"),
     path("create-catalog", CreateProfile.as_view(), name="create-catalog"),
 
     path('', views_catalog.CatalogView.as_view(
 
     ), name="catalog"),
-    path('category/', views_category.list, name="view-category"),
+    path('category/', views_category.list_category, name="view-category"),
 
     path('category/create/', views_category.UploadImage.as_view(), name='upload_template'),
     path('category/view/<int:pk>/', views_category.UploadImageDisplay.as_view(), name='view_upload_template_page'),
 
-    path('product/', views_product.list, name="view-product"),
+    path('product/', views_product.list_product, name="view-product"),
     # path('', RedirectView.as_view(url='catalog-detail/', permanent=True)),
     path('product/create/', views_product.UploadImage.as_view(), name='upload_p_template'),
     path('product/view/<int:pk>/', views_product.UploadImageDisplay.as_view(), name='view_upload_p_template_page'),
