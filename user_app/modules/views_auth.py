@@ -27,12 +27,11 @@ from django.views.generic import (
     FormView, UpdateView, View
 )
 from django.utils.functional import cached_property
-# from django_template_practice1 import settings
 from django.conf import settings
 from django.core import mail, serializers
 from django.core.mail import BadHeaderError
 from django.urls import reverse, reverse_lazy
-from ..models.account_model import Author
+from ..models.account_model import Profile
 from .form_auth import *
 from .form_auth import (
     SignUpForm,
@@ -44,13 +43,14 @@ from .form_auth import (
 # Atomic queries
 from django.db import transaction
 
+
 # @crumb('Staff')  # This is the root crumb -- it doesnâ€™t have a parent
 def index(request):
     # return HttpResponse('Hello, welcome to the index page.')
-    #     user_profile = request.session.get('user_profile') #print("________: "+json.dumps(user_profile)+user_profile['first_name'] )
+    # profile = request.session.get('profile') #print("________: "+json.dumps(profile)+profile['first_name'] )
     print('Run debug ok')
-    if request.user.is_authenticated:
-        return redirect('user:home')
+    if request.user.is_authenticated:  # print("_______: "+json.dumps(profile)+profile['first_name'] )
+        return redirect('user:home')  # HttpResponseRedirect("/home/")
 
     return render(request, "index.html",
                   {
@@ -60,7 +60,7 @@ def index(request):
                       'year': datetime.now().year,
                       'design': "Hà Huy Hoàng"
                   }
-                )
+                  )
 
 
 # Create your views here.
@@ -68,6 +68,10 @@ def index(request):
 def homepage(request):
     """Renders the home page."""
     try:
+        # profile = request.session.get('profile')
+        # print("___: "+json.dumps(profile)+profile['first_name'] )
+        # if profile and request.session.test_cookie_worked():
+        # request.session.set_test_cookie()
         context = {
             'title': "Home page",
             'next': '/home/',
@@ -75,7 +79,7 @@ def homepage(request):
             'year': datetime.now().year
         }
         return render(request, "home.html", context)  # messages.error(request, 'Please enable cookie')
-    #         return HttpResponseRedirect("/accounts/login/")
+    # return HttpResponseRedirect("/accounts/login/")
     except Exception as e:
         return redirect("user:login")
 
@@ -85,13 +89,25 @@ def homepage(request):
 # class Homepage(LoginRequiredMixin, BaseBreadcrumbMixin, TemplateView):
 class Homepage(LoginRequiredMixin, TemplateView):  # LoginRequiredMixin check Ä‘Äƒng nháº­p
     template_name = 'home.html'
+    # media_root = settings.MEDIA_ROOT
+    # _profile = Profile.objects.all()
+    # context_object_name = 'prof'
+    # _profile = form_auth.ProfileForm(instance=Profile)
+
     extra_context = {
         'title': "Home page",
         # 'next':'/home/',
         'list': 'list/',
+        # 'profile_form': _profile,
+        # 'image_profile': os.listdir(media_root + '/images'), #'image_profile': os.listdir(media_root + '/images/'),
         'year': datetime.now().year
     }
+    # extra_context['form'] = form_auth.UserForm
+    # extra_context['profile_form'] = form_auth.ProfileForm
+    # form_class = extra_context
+    # crumbs = []
     crumbs = []
+
 
 # class TestHomeView(BaseBreadcrumbMixin, TemplateView):
 class TestHomeView(TemplateView):
@@ -99,30 +115,21 @@ class TestHomeView(TemplateView):
     crumbs = []
 
 
-# ======= Login =============
+# ========= Login ==========
 def loginAdminView(request):
     return redirect("/admin/")
+
 
 class loginUser(View):
     def get(self, request):
         form = LoginForm
-        extra_context = {
-            'title': "Đăng nhập",
-            'next': '/home/',
-            'year': datetime.now().year
-        }
-        extra_context['form'] = form
+        extra_context = {'title': "Đăng nhập", 'next': '/home/', 'year': datetime.now().year, 'form': form}
         return render(request, 'registration/login.html', extra_context)
 
     def post(self, request):
         # pass
         form = LoginForm
-        extra_context = {
-            'title': "Đăng nhập",
-            'next': '/home/',
-            'year': datetime.now().year
-        }
-        extra_context['form'] = form
+        extra_context = {'title': "Đăng nhập", 'next': '/home/', 'year': datetime.now().year, 'form': form}
         username = request.POST['username']
         passw = request.POST['password']
         if form.is_valid():
@@ -135,7 +142,7 @@ class loginUser(View):
 
             if user is not None:
                 auth_login(request, user)
-                return redirect('user:home') # return render(request, 'home.html')
+                return redirect('user:home')  # return render(request, 'home.html')
             else:
                 extra_context['errors'] = 'Please enter a correct user name and password.'
                 return render(request, "registration/login.html", extra_context)
@@ -147,6 +154,7 @@ class loginUser(View):
         """Security check complete. Log the user in."""
         auth_login(self.request, form_class)
         return HttpResponseRedirect(self.get_success_url())
+
 
 # class AuthView(DetailBreadcrumbMixin, FormView):
 class AuthView(FormView):
@@ -160,7 +168,7 @@ class AuthView(FormView):
         'year': datetime.now().year
     }
     redirect_field_name = REDIRECT_FIELD_NAME
-    success_url = reverse_lazy('user:index') # reverse_lazy('user:home')  # '/home/'
+    success_url = reverse_lazy('user:index')  # reverse_lazy('user:home')  # '/home/'
     crumbs = [('Đăng nhập', 'login')]  # OR reverse_lazy
 
     def dispatch(self, request, *args, **kwargs):
@@ -218,15 +226,13 @@ class LoginView(FormView):
         url = self.get_redirect_url()
         user = auth.authenticate(username=self.request.POST.get('username', ''),
                                  password=self.request.POST.get('password', ''))
-        #         profile = Profile.objects.filter(id=user.id).select_related('user') # prefetch_related
-        #         print(user)
-        #         print(profile)
-        #         hhh = serialize('json', profile, cls=DjangoJSONEncoder)
+        # profile = Profile.objects.filter(id=user.id).select_related('user') # prefetch_related
+        # hhh = serialize('json', profile, cls=DjangoJSONEncoder)
         if user is not None and user.is_active:
             self.request.session.set_test_cookie()
-        #             self.request.session['user_profile'] = {"username": user.username, "email": user.email, "first_name": user.first_name, "last_name": user.last_name, "images": '', } #True
-        #         request.session['user_profile'] = True #True
-        return url or resolve_url('user:home') #settings.LOGIN_REDIRECT_URL
+        # self.request.session['profile'] = {"username": user.username, "email": user.email, "first_name": user.first_name, "last_name": user.last_name, "images": '', } #True
+        # request.session['profile'] = True #True
+        return url or resolve_url('user:home')  # settings.LOGIN_REDIRECT_URL
 
     def get_redirect_url(self):
         """Return the user-originating redirect URL if it's safe."""
@@ -269,13 +275,8 @@ class LoginView(FormView):
 def login_test(request):
     '''Shows a login form and a registration link.'''
     form_class = LoginForm
-    extra_context = {
-        'title': "Ä�Äƒng nháº­p",
-        'next': '/home/',
-        'year': datetime.now().year
-    }
-    extra_context['form'] = form_class
-    #     if request.method == 'POST':
+    extra_context = {'title': "Ä�Äƒng nháº­p", 'next': '/home/', 'year': datetime.now().year, 'form': form_class}
+    # if request.method == 'POST':
     if request.POST:
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
@@ -283,16 +284,16 @@ def login_test(request):
 
         if user is not None and user.is_active:
             auth_login(request, user)  # auth.login(request, user)
-            #             request.session['first_name'] = user.first_name
-            #             print(user)
-            #             request.session['user_profile'] = {"username": user.username, "email": user.email, "first_name": user.first_name, "last_name": user.last_name} #True
+            # request.session['first_name'] = user.first_name
+            # print(user)
+            # request.session['profile'] = {"username": user.username, "email": user.email, "first_name": user.first_name, "last_name": user.last_name} #True
             return HttpResponseRedirect("/home/")
 
         else:
             extra_context['errors'] = 'Please enter a correct user name and password.'
             extra_context['form'] = form_class
             # return HttpResponse("Invalid login. Please try again.")
-    #             auth_login(request, form_class.get_user())
+    # auth_login(request, form_class.get_user())
     # if not POST then return login form
     return render(request, "registration/login.html", extra_context)  # registration/login_test.html
 
@@ -317,13 +318,7 @@ class SuccessURLAllowedHostsMixin:
         return {self.request.get_host(), *self.success_url_allowed_hosts}
 
 
-# @login_required
-# def lousy_logout(request):
-#     auth_logout(request)
-#     return redirect('logout')
-
-
-@login_required
+@login_required()
 def user_logout(request):
     """
     Remove the authenticated user's ID from the request and flush their session
@@ -343,13 +338,14 @@ def user_logout(request):
         request.user = AnonymousUser()
     if request.session.test_cookie_worked():
         request.session.delete_test_cookie()
-    #     if request.session.get('user_profile'):
-    #         del request.session['user_profile'] #xoa session
+    #     if request.session.get('profile'):
+    #         del request.session['profile'] #xoa session
     return render(request, 'registration/logged_out.html')
 
     def post(self, request, *args, **kwargs):
         """Logout may be done via POST."""
         return self.get(request, *args, **kwargs)
+
 
 # ======================== sign_up ===============================
 class RegistrationAuthorForm(UserCreationForm):
@@ -358,12 +354,13 @@ class RegistrationAuthorForm(UserCreationForm):
         fields = ("username", "email")
         field_classes = {"username": UsernameField}
 
+
 class RegistrationAuthorView(FormView):  # via template
     template_name = 'registration/register_auth.html'
     # form_class = UserCreationForm
     form_class = RegistrationAuthorForm
 
-    
+
 # CreateView
 # class RegistrationUser(DetailBreadcrumbMixin, FormView):  # via template
 class RegistrationUser(FormView):  # via template
@@ -372,7 +369,8 @@ class RegistrationUser(FormView):  # via template
     email_template_name = 'registration/password_reset_email.html',
     subject_template_name = 'registration/password_reset_subject.txt'
     success_url = reverse_lazy('user:login')  # '/accounts/login/'
-    crumbs = [('Đăng nhập', reverse_lazy('user:login')), ('Đăng ký tài khoản', reverse_lazy('user:sign_up'))]  # OR reverse_lazy
+    crumbs = [('Đăng nhập', reverse_lazy('user:login')),
+              ('Đăng ký tài khoản', reverse_lazy('user:sign_up'))]  # OR reverse_lazy
     extra_context = {
         'title': "Đăng ký tài khoản",
         'site_header': "Đăng ký tài khoản",
@@ -383,22 +381,25 @@ class RegistrationUser(FormView):  # via template
 
     @transaction.non_atomic_requests
     def form_valid(self, form):
-        data = form.cleaned_data # form.save()  # form data will be saved
-        auth_user = User.objects.create_user(
-            username=data['username'],
-            password=data['password1'],
-            email=data['email'],
-            first_name=data['first_name'],
-            last_name=data['last_name']
-        )
-        instance = Author(
-            social_network=data['social_network'],
-            birthday = data['birthday'],
-            phone_number = data['phone_number'],
-            user_id = auth_user.id
+        data = form.cleaned_data  # form.save()  # form data will be saved
+        auth_user = User.objects.filter(username=data['username'])
+        from pprint import pprint;
+        pprint(auth_user)
+
+        if auth_user is not None:
+            auth_user = User.objects.create_user(
+                username=data['username'],
+                password=data['password1'],
+                email=data['email'],
+                first_name=data['first_name'],
+                last_name=data['last_name']
+            )
+        instance = Profile(
+            birthday=data['birthday'],
+            phone_number=data['phone_number'],
+            user_id=auth_user.id
         )
         instance.save()
-        from pprint import pprint; pprint(data)
         return super(RegistrationUser, self).form_valid(form)
 
     # Phần redirect giữa url & process data
@@ -426,9 +427,10 @@ class RegistrationUser(FormView):  # via template
     #     extra_context['username'] = self.request.GET.get('username')
     #     return extra_context
 
+
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Author.objects.create(user=instance)
+        Profile.objects.create(user=instance)
 
 
 def sign_up(request):  # via form
@@ -440,12 +442,8 @@ def sign_up(request):  # via form
             auth_login(request, user)
             return render(request, 'auth/login_auth.html')
 
-    extra_context = {
-        'title': "Ä�Äƒng kÃ½ tÃ i khoáº£n",
-        'next': '/accounts/login/',
-        'year': datetime.now().year
-    }
-    extra_context['form'] = form_class
+    extra_context = {'title': "Ä�Äƒng kÃ½ tÃ i khoáº£n", 'next': '/accounts/login/', 'year': datetime.now().year,
+                     'form': form_class}
     return render(request, 'auth/sign_up_auth.html', extra_context)
 
 
@@ -481,8 +479,6 @@ class RegistrationUserProfile(FormView):
 
     def post(self, request, *args, **kwargs):
         # price_lte = request.GET['price_lte']
-        # Here I also make instances of my form classes but this time I fill
-        # them up with data from POST request
         user_form = self.user_form_class(request.POST)
         profile_form = self.profile_form_class(request.POST)
         extra_context = {
@@ -512,7 +508,7 @@ class RegistrationUserProfile(FormView):
 
 # ======================== FORM reset pass ===============================
 class PassResetView(FormView):  #
-    #     template_name = 'auth/sign_up_auth.html'
+    # template_name = 'auth/sign_up_auth.html'
     template_name = 'registration/password_reset_confirm.html'
     form_class = ResetPassForm  ##UserCreationForm
     success_url = reverse_lazy('user:password_reset_complete')  # '/accounts/reset/done/'
@@ -523,7 +519,7 @@ class PassResetView(FormView):  #
 
     def form_valid(self, form):
         form.save()  # form data will be saved
-        #         self.save(commit=True)
+        # self.save(commit=True)
         return super(PassResetView, self).form_valid(form)
 
 
@@ -549,13 +545,12 @@ class PasswordResetView(FormView):
     #     send_mail('Subject', 'Here is the message.', 'hoang.hh@ts24corp.com', ['huyhoangbcvt@gmail.com'], fail_silently=False,)
     def post(self, request, *args, **kwargs):
         data = request.POST
-        #         name = data.get('first_name', '')
-        #         subject = "subject: Title header"
-        #         info_message = "body ms" #data.get('message', '')
+        # name = data.get('first_name', '')
+        # subject = "subject: Title header"
+        # info_message = "body ms" #data.get('message', '')
         from_email = settings.EMAIL_HOST_USER
         to_email = data.get('email', '')
-
-        #         mail.send_mail(subject, info_message, from_email, [to_email], fail_silently=False, )
+        # mail.send_mail(subject, info_message, from_email, [to_email], fail_silently=False, )
         context = {
             'title': 'Láº¥y láº¡i máº­t kháº©u',  # 'For get password',
             'next': '/accounts/password-reset/done/',
@@ -567,13 +562,13 @@ class PasswordResetView(FormView):
         message = render_to_string('registration/password_reset_email.html', context=context)
         mail.send_mail(subject, message, from_email, [to_email],
                        auth_user=None, auth_password=None, fail_silently=False,
-                       html_message='', )  # if html_message:  mail.attach_alternative(html_message=text_body, 'text/html')
-        #         html_message.attach('auth/Attachment.pdf', file_to_be_sent, 'file/pdf')
-
-        #         html_message = render_to_string(template_name='registration/password_reset_email.html')
-        #         plain_message = strip_tags(html_message)
-        #         mail.send_mail(subject, plain_message, from_email, [to_email], html_message=html_message, )
-        #         html_message.attach('auth/Attachment.pdf', file_to_be_sent, 'file/pdf')
+                       html_message='', )
+        # if html_message:  mail.attach_alternative(html_message=text_body, 'text/html')
+        # html_message.attach('auth/Attachment.pdf', file_to_be_sent, 'file/pdf')
+        # html_message = render_to_string(template_name='registration/password_reset_email.html')
+        # plain_message = strip_tags(html_message)
+        # mail.send_mail(subject, plain_message, from_email, [to_email], html_message=html_message, )
+        # html_message.attach('auth/Attachment.pdf', file_to_be_sent, 'file/pdf')
         return redirect('password_reset_done')
 
 
@@ -583,7 +578,7 @@ def resetPassword(req):
         'year': datetime.now().year
     }
     form_class = ResetPassToEmailForm(req.POST or None)
-    #     req_method = req.method
+    # req_method = req.method
     if req.POST:
         if form_class.is_valid():
             subject = "subject: Title header"
@@ -606,61 +601,8 @@ def resetPassword(req):
     return render(req, 'registration/password_reset_form.html', context)
 
 
-# ======================== Bread crumb ===============================
-@register.filter
-def makebreadcrumbs(value, arg):
-    my_crumbs = []
-    crumbs = value.split('/')[1:-1]  # slice domain and last empty value
-    for index, c in enumerate(crumbs):
-        if c == arg and len(crumbs) != 1:
-            # check it is a index of the app. example: /users/user/change_password - /users/ is the index.
-            link = '<a href="{}">{}</a>'.format(reverse(c + ':index'), c)
-        else:
-            if index == len(crumbs) - 1:
-                link = '<span>{}</span>'.format(c)
-                # the current bread crumb should not be a link.
-            else:
-                link = '<a href="{}">{}</a>'.format(reverse(arg + ':' + c), c)
-        my_crumbs.append(link)
-    return ' &gt; '.join(my_crumbs)
-    # return whole list of crumbs joined by the right arrow special character.
-
-
-def breadcrumbs(whole_url):
-    # https://stackoverflow.com/questions/826889/how-to-implement-breadcrumbs-in-a-django-template
-    # https://pypi.org/project/django-view-breadcrumbs/
-    # dissect the url
-    # whole_url = 'blog/'#context['title']
-    print(whole_url)
-    slugs = whole_url.split('/')
-    # for each 'directory' in the url create a piece of bread
-    breadcrumbs = []
-    url = '/'
-    for slug in slugs:
-        if slug != '':
-            url = '%s%s/' % (url, slug)
-            breadcrumb = {'slug': slug, 'url': url}
-            breadcrumbs.append(breadcrumb)
-    return breadcrumbs
-
-
 # WEB Controllers: hoanghh
 # ======================== Blog ===============================
-def blog(request):
-    #     template = loader.get_template('blog/blog.html')
-    _list = Author.objects.all()
-    crumbs = [('Trang chá»§', reverse_lazy('user:home')), ('Show danh sÃ¡ch', reverse_lazy('user:blog'))]  # OR reverse_lazy
-    context = {
-        'title': 'Show danh sÃ¡ch',
-        'book_list': _list,
-        'crumbs': crumbs,
-        'year': datetime.now().year,
-    }
-    # dissect the url
-    whole_url = request.path  # context['title'] #request.path | request.get_full_path | request.build_absolute_uri
-    #     context['breadcrumbs'] = breadcrumbs(whole_url)
-    #     return HttpResponse(template.render(context, request))
-    return render(request, 'blog/blog.html', context)
 
 
 class HomePageView(TemplateView):
@@ -714,7 +656,7 @@ class DataPageView(TemplateView):
         return render(request, 'data/data.html', context)
 
 
-# ======================== Profile ===============================
+# ============== Profile ================
 class RoleManager():  # (models.Manager)
 
     def get(self, request, *args, **kwargs):
@@ -734,7 +676,7 @@ class RoleManager():  # (models.Manager)
 
 # class TestDetailView(DetailBreadcrumbMixin, DetailView):
 class TestDetailView(DetailView):
-    model = Author
+    model = Profile
     #     home_label = _('My custom home')
     template_name = 'profile/profile_edit.html'
 
@@ -748,23 +690,18 @@ def get_profile(request):
     return request.user.profile
 
 
-#     profile = request.user.get_profile()
-#     return profile
-
-
 # class ProfileView(LoginRequiredMixin, DetailBreadcrumbMixin, TemplateView):
 class ProfileView(TemplateView):
-    model = Author
+    model = Profile
     # from pprint import pprint; pprint('author')
-    context_object_name = 'author'
-    # extra_context['author'] = Author.objects.all() # self.request.GET.get('username')
+    context_object_name = 'profile'
     template_name = 'profile/profile_view.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        author = Author.objects.all()[:4] # Lấy 4 loại tk: 1 local & 3 Social
-        context['author'] = author[0]
-        from pprint import pprint; pprint(context['author'])
+        # author = Profile.objects.all()[:1] # Lấy 1 loại tk: 1 local or 3 Social
+        # context['author'] = author[0]
+        # from pprint import pprint; pprint(context['author'])
         return context
 
     # Phần gửi dữ liệu context lên template
@@ -775,7 +712,7 @@ class ProfileView(TemplateView):
     #         'role_label': role_value,
     #         'year': datetime.now().year
     #     }
-    #     extra_context['author'] = Author.objects.all()
+    #     extra_context['author'] = Profile.objects.all()
     #     # extra_context['username'] = self.request.GET.get('username')
     #     return extra_context
 
@@ -786,13 +723,13 @@ class ProfileView(TemplateView):
     # }
     # crumbs = [('Thông tin cá nhân', reverse_lazy('user:profile'))]
 
-    
+
 # class EditUserProfileView_Test(LoginRequiredMixin, ListBreadcrumbMixin, UpdateView):  # Note that we are using UpdateView and not FormView
 class EditUserProfileView_Test(UpdateView):  # Note that we are using UpdateView and not FormView
     # https://django.cowhite.com/blog/adding-and-editing-model-objects-using-django-class-based-views-and-forms/
-    #     model = Profile #form_class = form_auth.ProfileForm
-    #     user_form_class = UserForm
-    #     profile_form_class = ProfileForm
+    # model = Profile #form_class = form_auth.ProfileForm
+    # user_form_class = UserForm
+    # profile_form_class = ProfileForm
     form_class = ProfileForm
     template_name = "profile/profile_edit_full.html"
     extra_context = {
@@ -815,9 +752,9 @@ class EditUserProfileView_Test(UpdateView):  # Note that we are using UpdateView
 # class EditUserProfileView(LoginRequiredMixin, ListBreadcrumbMixin, UpdateView):  # Note that we are using UpdateView and not FormView
 class EditUserProfileView(UpdateView):  # Note that we are using UpdateView and not FormView
     # https://django.cowhite.com/blog/adding-and-editing-model-objects-using-django-class-based-views-and-forms/
-    #     model = Profile #form_class = form_auth.ProfileForm
-    #     user_form_class = UserForm
-    #     profile_form_class = ProfileForm
+    # model = Profile #form_class = form_auth.ProfileForm
+    # user_form_class = UserForm
+    # profile_form_class = ProfileForm
     template_name = "profile/profile_edit.html"
     add_home = False
     extra_context = {
@@ -831,11 +768,11 @@ class EditUserProfileView(UpdateView):  # Note that we are using UpdateView and 
         return [('Trang chá»§', reverse_lazy('user:home')), ('ThÃ´ng tin cÃ¡ nhÃ¢n', reverse_lazy('user:profile')),
                 ('Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n', reverse_lazy('user:profile_edit'))]
 
-    #     def form_valid(self, form):
-    #         form.save()  # form data will be saved
-    # #         post_save.connect(create_user_profile, sender=User)
-    #         return super(EditUserProfileView, self).form_valid(form)
-    #     success_url = '/home/'
+    # def form_valid(self, form):
+    # form.save()  # form data will be saved
+    # # post_save.connect(create_user_profile, sender=User)
+    # return super(EditUserProfileView, self).form_valid(form)
+    # success_url = '/home/'
 
     def get(self, request, *args, **kwargs):
         if request.method == 'GET' and 'price_lte' in request.GET:
@@ -851,7 +788,8 @@ class EditUserProfileView(UpdateView):  # Note that we are using UpdateView and 
             instance=request.user.profile)  # profile_form = self.profile_form_class(None)
         self.extra_context['crumbs'] = self.crumbs
         # and then just pass them to my template
-        return render(request, self.template_name, self.extra_context)  # {'user_form': user_form, 'profile_form': profile_form}
+        return render(request, self.template_name,
+                      self.extra_context)  # {'user_form': user_form, 'profile_form': profile_form}
 
     #     def get_object(self, *args, **kwargs):
     #         #user = get_object_or_404(User, pk=self.kwargs['pk'])
@@ -865,11 +803,11 @@ class EditUserProfileView(UpdateView):  # Note that we are using UpdateView and 
             print(price_lte)
         # Here I also make instances of my form classes but this time I fill
         # them up with data from POST request
-        #         user_form = self.user_form_class(request.POST)
-        #         profile_form = self.profile_form_class(request.POST)
+        # user_form = self.user_form_class(request.POST)
+        # profile_form = self.profile_form_class(request.POST)
         user_form = UserForm(request.POST, instance=request.user)
         profile_form = ProfileForm(request.POST, request.FILES,
-                                             instance=request.user.profile)  # request.FILES is show the selected image or file
+                                   instance=request.user.profile)  # request.FILES is show the selected image or file
 
         if user_form.is_valid() and profile_form.is_valid():
             user_save = user_form.save()
@@ -889,8 +827,8 @@ class EditUserProfileView(UpdateView):  # Note that we are using UpdateView and 
 
 @login_required
 def edit_profile_pk(request, gu_id):
-    crumbs = [('Trang chá»§', reverse('home')), ('ThÃ´ng tin cÃ¡ nhÃ¢n', reverse('profile')),
-              ('Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n', reverse('profile_edit'))]
+    crumbs = [('Trang chá»§', reverse('home')), ('ThÃ´ng tin cÃ¡ nhÃ¢n', reverse('user:profile')),
+              ('Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n', reverse('user:profile_edit'))]
     #     @cached_property
     #     def crumbs(self):
     #         return [('Trang chá»§', reverse('home')), ('ThÃ´ng tin cÃ¡ nhÃ¢n', reverse('profile')), ('Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n', reverse('profile_edit'))] #[('My Test Breadcrumb', reverse('profile_edit'))]
@@ -899,7 +837,7 @@ def edit_profile_pk(request, gu_id):
         #         user_form = Book.objects.get(pk=gu_id)
         user_form = UserForm(request.POST, instance=request.user)
         profile_form = ProfileForm(request.POST, request.FILES,
-                                             instance=request.user.profile)  # request.FILES is show the selected image or file
+                                   instance=request.user.profile)  # request.FILES is show the selected image or file
 
         if user_form.is_valid() and profile_form.is_valid():
             print(request.user.get_username())
@@ -909,19 +847,14 @@ def edit_profile_pk(request, gu_id):
             #             user_save["username"] = 'hoanghh'
             profile_save.user = user_save
             profile_save.save()
-            return redirect('profile')
+            return redirect('user:profile')
 
         return render(request, 'profile/profile_edit.html',
                       {'user_form': user_form, 'profile_form': profile_form, 'crumbs': crumbs})
     else:
-        context = {
-            'title': "Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n",
-            'role_label': get_role_func(request),
-            'year': datetime.now().year
-        }
-        context['user_form'] = UserForm(instance=request.user)
-        context['profile_form'] = ProfileForm(instance=request.user.profile)
-        context['crumbs'] = crumbs
+        context = {'title': "Thay Ä‘á»•i thÃ´ng tin cÃ¡ nhÃ¢n", 'role_label': get_role_func(request),
+                   'year': datetime.now().year, 'user_form': UserForm(instance=request.user),
+                   'profile_form': ProfileForm(instance=request.user.profile), 'crumbs': crumbs}
         # context.update(csrf(request))
         # args['formatedDate'] = profile_form.birthday.strftime("%Y-%m-%d %H:%M:%S")
         return render(request, 'profile/profile_edit.html', context)
@@ -929,7 +862,7 @@ def edit_profile_pk(request, gu_id):
 
 def get_role_func(request):
     SOCIAL_CHOICES = ['Google', 'Facebook', 'Linkedin']
-    # return instance.account.role
+    # return instance.profile.role
     str_role = ''
     for index, value in enumerate(SOCIAL_CHOICES):
         if (request.user.profile.role == index + 1):
@@ -939,18 +872,18 @@ def get_role_func(request):
 
 
 class ProfileInline(admin.StackedInline):
-    model = Author
+    model = Profile
     can_delete = False
-    verbose_name_plural = 'user_authors'
+    verbose_name_plural = 'profiles'
     fk_name = 'user'
 
 
 # Chá»‰ dÃ¹ng cho admin
 class CustomUserAdmin(UserAdmin):
     inlines = (ProfileInline,)
-    list_display = (
-    'username', 'email', 'first_name', 'last_name', 'is_staff', 'get_address', 'get_phonenumber', 'get_role',
-    'get_image')
+    list_display = [
+        'username', 'email', 'first_name', 'last_name', 'is_staff', 'get_address', 'get_phone_number', 'get_role',
+        'get_image']
     list_select_related = ('profile',)
 
     def get_address(self, instance):
@@ -960,12 +893,12 @@ class CustomUserAdmin(UserAdmin):
 
     get_address.short_description = 'Ä�á»‹a chá»‰'
 
-    def get_phonenumber(self, instance):
+    def get_phone_number(self, instance):
         if instance.profile.phoneNumber:
             return instance.profile.phoneNumber
         return ''
 
-    get_phonenumber.short_description = 'Sá»‘ Ä‘iá»‡n thoáº¡i'
+    get_phone_number.short_description = 'Sá»‘ Ä‘iá»‡n thoáº¡i'
 
     def get_role(self, instance):
         SOCIAL_CHOICES = ['Google', 'Facebook', 'Linkedin']
@@ -991,4 +924,3 @@ class CustomUserAdmin(UserAdmin):
         if not obj:
             return list()
         return super(CustomUserAdmin, self).get_inline_instances(request, obj)
-
