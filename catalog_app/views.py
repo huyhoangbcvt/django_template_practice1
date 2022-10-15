@@ -4,14 +4,14 @@ from django.shortcuts import render
 from rest_framework.generics import ListAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 # from .models import Book
-from user_app.models.account_model import Author
+from user_app.models.account_model import Profile
 from .serializers import User_appSerializer
 from rest_framework.mixins import CreateModelMixin
 
 
 # Get all
 class ListAllProfile(ListAPIView):
-    queryset = Author.objects.all()
+    queryset = Profile.objects.all()
     serializer_class = User_appSerializer
     permission_classes = [IsAuthenticated]
 
