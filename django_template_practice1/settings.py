@@ -21,11 +21,6 @@ from django.core.wsgi import get_wsgi_application
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATE_INPUT_FORMATS = ('%d/%m/%Y','%d-%m-%Y','%Y-%m-%d')
-LOGIN_REDIRECT_URL = '/admin/'
-LOGOUT_REDIRECT_URL = '/admin/'
-LOGIN_URL = '/admin/login/'
-BREADCRUMBS_HOME_LABEL = 'Trang chủ'
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -45,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # 'django.contrib.humanize', #Format number: 4500000 becomes 4,500,000 | 4500.2 becomes 4,500.2 | 450000 becomes '450.000'
+    'django.contrib.humanize', #Format number: 4500000 becomes 4,500,000 | 4500.2 becomes 4,500.2 | 450000 becomes '450.000'
     # 'django_bootstrap_breadcrumbs',
     # 'view_breadcrumbs', #Step Menu
 
