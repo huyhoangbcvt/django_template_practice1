@@ -9,7 +9,7 @@ from django.contrib.auth.forms import (
     UserCreationForm, UserChangeForm, AuthenticationForm, PasswordResetForm,  # send mail
     SetPasswordForm, PasswordChangeForm, AdminPasswordChangeForm,
 )
-from ..models.account_model import Author
+from ..models.account_model import Profile
 from django.conf import settings
 from django.template.defaultfilters import default
 # from .widgets
@@ -18,7 +18,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column
 from django.utils.translation import gettext_lazy as _
 
 
-# ======================== FORM Authentication ===============================
+# ========== FORM Authentication =============
 class LoginForm(AuthenticationForm):  # AuthenticationForm
     """Authentication form which uses boostrap CSS."""
     username = forms.CharField(label="Tên đăng nhập (*)", max_length=254,
@@ -31,69 +31,7 @@ class LoginForm(AuthenticationForm):  # AuthenticationForm
                                    'placeholder': 'Mật khẩu'}))
 
 
-# ======================== FORM registration ===============================
-# class AuthorCreationForm(forms.ModelForm):
-#     """
-#     A form that creates a user, with no privileges, from the given username and
-#     password.
-#     """
-#
-#     error_messages = {
-#         "password_mismatch": _("The two password fields didn’t match."),
-#     }
-#     password1 = forms.CharField(
-#         label=_("Password"),
-#         strip=False,
-#         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-#         help_text=password_validation.password_validators_help_text_html(),
-#     )
-#     password2 = forms.CharField(
-#         label=_("Password confirmation"),
-#         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-#         strip=False,
-#         help_text=_("Enter the same password as before, for verification."),
-#     )
-#
-#     class Meta:
-#         model = User
-#         fields = ("username",)
-#         field_classes = {"username": UsernameField}
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         if self._meta.model.USERNAME_FIELD in self.fields:
-#             self.fields[self._meta.model.USERNAME_FIELD].widget.attrs[
-#                 "autofocus"
-#             ] = True
-#
-#     def clean_password2(self):
-#         password1 = self.cleaned_data.get("password1")
-#         password2 = self.cleaned_data.get("password2")
-#         if password1 and password2 and password1 != password2:
-#             raise ValidationError(
-#                 self.error_messages["password_mismatch"],
-#                 code="password_mismatch",
-#             )
-#         return password2
-#
-#     def _post_clean(self):
-#         super()._post_clean()
-#         # Validate the password after self.instance is updated with form data
-#         # by super().
-#         password = self.cleaned_data.get("password2")
-#         if password:
-#             try:
-#                 password_validation.validate_password(password, self.instance)
-#             except ValidationError as error:
-#                 self.add_error("password2", error)
-#
-#     def save(self, commit=True):
-#         user = super().save(commit=False)
-#         user.set_password(self.cleaned_data["password1"])
-#         if commit:
-#             user.save()
-#         return user
-
+# =========== FORM registration ============
 class SignUpForm(UserCreationForm):  # UserCreationForm  or forms.Form
     first_name = forms.CharField(label="Tên (*)", max_length=254,
                                  widget=forms.TextInput({
@@ -110,17 +48,6 @@ class SignUpForm(UserCreationForm):  # UserCreationForm  or forms.Form
     birthday = forms.DateField(label="Ngày sinh", help_text='(định dạng mm/dd/yyyy)',
                                widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'id': 'datepicker'}),
                                input_formats=settings.DATE_INPUT_FORMATS)
-    LOCAL_ACCOUNT = 0
-    GOOGLE = 1
-    FACEBOOK = 2
-    LINKEDIN = 3
-    SOCIAL_CHOICES = (
-        (LOCAL_ACCOUNT, 'Local account'),
-        (GOOGLE, 'Google'),
-        (FACEBOOK, 'Facebook'),
-        (LINKEDIN, 'Linkedin'),
-    )
-    social_network = forms.ChoiceField(label="Chọn loại tài khoản nội bộ hoặc mạng xã hội", choices=SOCIAL_CHOICES)
 
     phone_number = forms.CharField(label="Số điện thoại", max_length=20, required=False,
                                    widget=forms.TextInput({
@@ -130,7 +57,7 @@ class SignUpForm(UserCreationForm):  # UserCreationForm  or forms.Form
                                widget=forms.TextInput({
                                    'class': 'form-control',
                                    'placeholder': 'Tên đăng nhập'}))
-    #     first_name = forms.CharField(max_length=100, help_text='Last Name')
+    # first_name = forms.CharField(max_length=100, help_text='Last Name')
     password1 = forms.CharField(label="Mật khẩu (*)",
                                 widget=forms.PasswordInput({
                                     'class': 'form-control',
@@ -146,45 +73,8 @@ class SignUpForm(UserCreationForm):  # UserCreationForm  or forms.Form
     #     fields = ('first_name', 'last_name', 'email', 'phone_number', 'username', 'password1', 'password2',)
 
 
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.helper = FormHelper()
-#         self.helper.layout = Layout(
-#             Row(
-#                 Column('first_name', css_class='form-group col-md-6 mb-0'),
-#                 Column('last_name', css_class='form-group col-md-6 mb-0'),
-#                 css_class='form-row'
-#             ),
-#             'address_1',
-#             'address_2',
-#             Row(
-#                 Column('city', css_class='form-group col-md-6 mb-0'),
-#                 Column('state', css_class='form-group col-md-4 mb-0'),
-#                 Column('zip_code', css_class='form-group col-md-2 mb-0'),
-#                 css_class='form-row'
-#             ),
-#             'check_me_out',
-#             Submit('submit', 'Sign in')
-#         )
-
-# from django import forms
-# from django.contrib.auth.forms import AuthenticationForm
-# from django.utils.translation import ugettext_lazy as _
-#
-# class BootstrapAuthenticationForm(AuthenticationForm):
-#     """Authentication form which uses boostrap CSS."""
-#     username = forms.CharField(max_length=254,
-#                                widget=forms.TextInput({
-#                                    'class': 'form-control',
-#                                    'placeholder': 'Tên đăng nhập'}))
-#     password = forms.CharField(label=_("Password"),
-#                                widget=forms.PasswordInput({
-#                                    'class': 'form-control',
-#                                    'placeholder':'Mật khẩu'}))
-
 # ======================== FORM change password to send email ===============================
 class ResetPassToEmailForm(PasswordResetForm):  # PasswordResetForm
-
     """Authentication form which uses boostrap CSS."""
     email = forms.CharField(label="Mail điện tử (*)", max_length=100,
                             widget=forms.TextInput({
@@ -222,10 +112,10 @@ class PassChangeForm(PasswordChangeForm):  # PasswordChangeForm
                                         'placeholder': 'Gõ lại mật khẩu mới'}))
 
 
-# ======================== FORM profile ===============================
+# ============ FORM profile ================
 class UserForm(ModelForm):  # UserCreationForm
     # class ProfileForm(forms.Form):
-    #     username = forms.CharField(max_length=30)
+    # username = forms.CharField(max_length=30)
     email = forms.CharField(label="Mail điện tử", help_text='Yandex/ Gmail/ Outlook', max_length=100, required=False,
                             widget=forms.TextInput({
                                 'class': 'form-control',
@@ -306,7 +196,7 @@ class ProfileForm(ModelForm):
     # images = forms.ImageField(label="Hình ảnh Avatar", help_text='Chọn một file từ thiết bị làm Avatar.', widget=forms.FileInput())
     # logo = forms.FileField(label='Logo')
     class Meta:
-        model = Author
+        model = Profile
         fields = ('social_network', 'birthday', 'phone_number', 'address', 'description', 'website',
                   'images')  # Note that we didn't mention user field here.
         labels = {'social_network': _('Mạng xã hội'), 'birthday': _('Ngày sinh'), 'images': _('Hình ảnh Avatar')}
