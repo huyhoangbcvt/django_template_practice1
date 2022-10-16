@@ -40,6 +40,10 @@ from .form_auth import (
     ResetPassForm,
     ResetPassToEmailForm,
 )
+try:
+    from django_template_practice1.local_settings import *
+except ImportError:
+    pass
 # Atomic queries
 from django.db import transaction
 
@@ -202,6 +206,7 @@ class LoginView(FormView):
         'title': "Đăng nhập",
         # 'next': 'home/',
         'site_header': 'Đăng nhập',
+        'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID,
         'year': datetime.now().year
     }
     authentication_form = None
