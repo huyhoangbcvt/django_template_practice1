@@ -33,6 +33,7 @@ urlpatterns = [
     # Login form
     # path('accounts/login/', views_auth.loginUser.as_view(), name="login"),
     path('accounts/login/', views_auth.LoginView.as_view(), name="login"),
+    path('accounts/login-social/', views_auth.LoginSocialView.as_view(), name="login_social"),
 
     path('accounts/logout/', auth_views.LogoutView.as_view(
             #template_name="registration/logged_out.html",
