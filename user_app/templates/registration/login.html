@@ -48,6 +48,18 @@
 						</div>
 					</div>
 					<div class="clearfix"></div>
+					<hr/>
+						<div class="row">
+							<div class="col-12">
+								<fieldset class="form-group p-3">
+									<div class="form-group">
+										<a href="https://accounts.google.com/o/oauth2/auth?scope=email&redirect_uri={% url 'user:login_social' %}&response_type=code&client_id={{GOOGLE_CLIENT_ID}}&approval_prompt=force">
+											<span class="ced-sociallogin-google-inner">Đăng nhập bằng google</span>
+										</a>
+					              	</div>
+								</fieldset>
+							</div>
+						</div>
 				</form>
 			</div>
 			<div id="footer"></div>
