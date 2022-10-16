@@ -187,6 +187,10 @@ class AuthView(FormView):
         return super().dispatch(request, *args, **kwargs)
 
 
+class LoginSocialView(FormView):
+    pass
+
+
 # class LoginView(DetailBreadcrumbMixin, FormView):
 class LoginView(FormView):
     success_url_allowed_hosts = set()
